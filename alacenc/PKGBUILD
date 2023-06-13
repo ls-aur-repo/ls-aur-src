@@ -1,1 +1,33 @@
+# Maintainer: Tomasz 'Ludvick' Niedzielski <ludvick0@gmail.com>
+# Contributor: Fabio 'Lolix' Loli <fabio.loli@disroot.org> -> https://github.com/FabioLolix
+# Contributor: Gustavo Alvarez <sl1pkn07@gmail.com>
 
+pkgname=alacenc
+pkgver=0.3.0
+pkgrel=2
+pkgdesc="Encode audio into the Apple Lossless Audio Codec (ALAC) format"
+arch=(x86_64)
+url="https://github.com/flacon/alacenc"
+license=(MIT)
+depends=(gcc-libs)
+makedepends=(git cmake)
+source=("${pkgname}-${pkgver}.tar.gz::https://github.com/flacon/alacenc/archive/refs/tags/v${pkgver}.tar.gz"
+	"${pkgname}-gcc13-fix.patch::https://github.com/flacon/${pkgname}/pull/3/commits/84b6e5c7aee44a052bddffca9e7d486eb97c50f7.patch")
+sha256sums=('199c0e3524942d7c2934896f3fc4d2fa1390db701a4f08975b792ada34934a39'
+            'a959af32736882778d4017b378a1267163a0d0c86729196c99bdaa67cacfc215')
+
+prepare() {
+	patch -Np1 "${pkgname}-${pkgver}/types.h" -i "${pkgname}-gcc13-fix.patch"
+}
+
+build() {
+	cmake -S "${pkgname}-${pkgver}" -B "${pkgname}-${pkgver}/build" \
+		-DCMAKE_BUILD_TYPE=None \
+		-DCMAKE_INSTALL_PREFIX=/usr
+	cmake --build "${pkgname}-${pkgver}/build"
+}
+
+package() {
+	DESTDIR="${pkgdir}" cmake --install "${pkgname}-${pkgver}/build"
+	install -Dm644 "${pkgname}-${pkgver}/LICENSE" "${pkgdir}/usr/share/licenses/${pkgname}/LICENSE"
+}
